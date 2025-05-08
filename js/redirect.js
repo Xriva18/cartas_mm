@@ -15,9 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const codigo = input.value.trim();
 
         if (codigo) {
+            // Intentar redirigir a la página correspondiente
             window.location.href = `html/${codigo}.html`;
         } else {
             alert('Por favor, ingrese un código.');
         }
     });
 });
+
