@@ -46,16 +46,18 @@
 .flip-card-back {
     font-size: 12px;
     line-height: 0.5;
-    
+
 }
 
 p {
     margin: 0;
-    line-height: 1.2; /* Ajusta este valor según tus necesidades */
+    line-height: 1.2;
+    /* Ajusta este valor según tus necesidades */
 }
 
 .inferior {
-    position: absolute; /* o fixed, si quieres que permanezca en esa posición al hacer scroll */
+    position: absolute;
+    /* o fixed, si quieres que permanezca en esa posición al hacer scroll */
     bottom: 15px;
     right: 25px;
 }
@@ -70,7 +72,8 @@ p {
 
 .color-btn {
     background-color: #e4c5c3;
-    color: white;;
+    color: white;
+    ;
 }
 
 .color-btn:hover {
@@ -87,15 +90,14 @@ p {
     --color5: #ffffff;
 }
 
-/* Fondo de la página con degradado */
+/* Deja tu degradado existing en body */
 body {
-    /* Degradado suave usando tres de los colores */
     background: linear-gradient(135deg, var(--color1), var(--color2), var(--color3));
-    min-height: 100vh;
     margin: 0;
-    font-family: Arial, sans-serif;
-    color: #333;
+    overflow: hidden;
+    /* oculta scroll por el canvas */
 }
+
 
 /* Opcional: Cambiar el color de los enlaces */
 a {
@@ -104,7 +106,8 @@ a {
 
 /* Estilo para la tarjeta */
 .card {
-    background-color: var(--color5);  /* Utiliza el color más claro para la tarjeta */
+    background-color: var(--color5);
+    /* Utiliza el color más claro para la tarjeta */
     border: none;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -114,4 +117,18 @@ a {
 .card-title {
     color: var(--color4);
     font-weight: bold;
+}
+
+
+/* lienzo de fondo */
+#networkBg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    /* detrás de todo */
+    pointer-events: none;
+    /* que no interfiera con clicks */
 }
