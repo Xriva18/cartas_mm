@@ -13,6 +13,8 @@
         <link rel="icon" href="img/logo_carta" type="image/x-icon">
         <link rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        <script src="js/redirect.js" defer></script>
+        <!-- Script para redirigir al ingresar el código QR -->
     </head>
     <body>
         <!-- Contenedor que centra vertical y horizontalmente -->
@@ -42,23 +44,6 @@
         </div>
     </body>
 
-    <!-- Agregamos el script para manejar la redirección -->
-    <script>
-    document.getElementById('redirForm').addEventListener('submit', function(e) {
-      e.preventDefault(); // Evita el envío tradicional del formulario
-      // Obtiene el valor ingresado, eliminando espacios al inicio y al final
-      const codigo = document.getElementById('searchInput').value.trim();
-
-      // Verifica que el input no esté vacío
-      if (codigo !== '') {
-        // Construye la ruta del archivo HTML y redirige
-        window.location.href = `html/${codigo}.html`;
-      } else {
-        // Notifica al usuario si no se ingresó ningún valor
-        alert('Por favor, ingrese un código.');
-      }
-    });
-  </script>
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
