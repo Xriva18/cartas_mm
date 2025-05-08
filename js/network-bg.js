@@ -3,7 +3,6 @@ let animationFrameId = null;
 let isInitialized = false;
 
 function initNetwork() {
-    // Si ya está inicializado, no hacer nada
     if (isInitialized) return;
 
     const canvas = document.getElementById('networkBg');
@@ -18,30 +17,25 @@ function initNetwork() {
         return;
     }
 
-    // Variables para puntos y threshold
-    let POINTS = 80; // valor inicial, se recalcula en resize
-    let threshold = 150; // valor inicial, se recalcula en resize
+    let POINTS = 80;
+    let threshold = 150;
     let points = [];
+    let pulseTime = 0;  // Añadimos variable para controlar el pulso
 
-    // Ajusta el tamaño y recalcula puntos y threshold
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        // Responsivo: ajusta cantidad de puntos y threshold
         POINTS = Math.floor((canvas.width * canvas.height) / 8000);
-        POINTS = Math.max(20, Math.min(POINTS, 150)); // límites razonables
+        POINTS = Math.max(20, Math.min(POINTS, 150));
         threshold = Math.max(canvas.width, canvas.height) / 10;
-        // Regenera los puntos cuando se redimensiona
         initPoints();
     }
 
-    // Lee colores desde tus variables CSS
     const style = getComputedStyle(document.documentElement);
     const lineColor = style.getPropertyValue('--color5').trim() || '#ffffff';
-    const alphaLine = 0.4;
     const nodeColor = style.getPropertyValue('--color5').trim() || '#ffffff';
+    const alphaLine = 0.7;
 
-    // Convierte hex a rgba
     function hexToRgba(hex, a) {
         const c = hex.replace('#', '');
         const num = parseInt(c, 16);
@@ -62,15 +56,12 @@ function initNetwork() {
 
     function updatePoints() {
         for (const p of points) {
-            // Actualiza posición
             p.x += p.vx;
             p.y += p.vy;
 
-            // Rebota en los bordes
             if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
             if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
-            // Mantiene los puntos dentro del canvas
             p.x = Math.max(0, Math.min(canvas.width, p.x));
             p.y = Math.max(0, Math.min(canvas.height, p.y));
         }
@@ -80,11 +71,35 @@ function initNetwork() {
         if (!ctx || !canvas) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Actualiza posiciones
         updatePoints();
 
-        // dibuja líneas entre puntos cercanos
+        // Actualizamos el tiempo del pulso
+        pulseTime += 0.001;
+
+        // Función personalizada para el pulso con tiempos específicos
+        const normalizedTime = (Math.sin(pulseTime) + 1) / 2; // Normaliza a 0-1
+        let pulseOpacity;
+
+        if (normalizedTime < 0.2) {
+            // Estado 1: Opacidad 0.5 por 1 segundo
+            pulseOpacity = 0.5;
+        } else if (normalizedTime < 0.25) {
+            // Estado 2: Transición rápida a 0.2 (0.5 segundos)
+            const t = (normalizedTime - 0.2) * 20; // Normaliza a 0-1
+            pulseOpacity = 0.5 - (0.3 * t); // Transición lineal de 0.5 a 0.2
+        } else if (normalizedTime < 0.3) {
+            // Estado 3: Opacidad 0.2 por 0.5 segundos
+            pulseOpacity = 0.2;
+        } else if (normalizedTime < 0.35) {
+            // Estado 4: Transición suave a 0.5 (0.5 segundos)
+            const t = (normalizedTime - 0.3) * 20; // Normaliza a 0-1
+            pulseOpacity = 0.2 + (0.3 * (1 - Math.cos(t * Math.PI)) / 2); // Curva suave de 0.2 a 0.5
+        } else {
+            // Estado 5: Opacidad 0.5 por 1 segundo
+            pulseOpacity = 0.5;
+        }
+
+        // Dibuja las conexiones primero
         ctx.strokeStyle = hexToRgba(lineColor, alphaLine);
         ctx.lineWidth = 2;
         for (let i = 0; i < POINTS; i++) {
@@ -95,7 +110,8 @@ function initNetwork() {
                 const dy = p.y - q.y;
                 const dist = Math.hypot(dx, dy);
                 if (dist < threshold) {
-                    ctx.globalAlpha = 1 - dist / threshold;
+                    const opacity = Math.pow(1 - dist / threshold, 1.5);
+                    ctx.globalAlpha = opacity * alphaLine;
                     ctx.beginPath();
                     ctx.moveTo(p.x, p.y);
                     ctx.lineTo(q.x, q.y);
@@ -104,8 +120,9 @@ function initNetwork() {
             }
         }
 
-        // dibuja nodos
-        ctx.fillStyle = hexToRgba(nodeColor, 0.8);
+        // Dibuja los nodos con opacidad pulsante
+        ctx.globalAlpha = pulseOpacity;
+        ctx.fillStyle = hexToRgba(nodeColor, pulseOpacity);
         for (const p of points) {
             ctx.beginPath();
             ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
@@ -119,17 +136,14 @@ function initNetwork() {
         animationFrameId = requestAnimationFrame(animate);
     }
 
-    // Inicializa todo
     resize();
     initPoints();
     window.addEventListener('resize', resize);
 
-    // Marca como inicializado y comienza la animación
     isInitialized = true;
     animate();
 }
 
-// Función para limpiar la animación
 function cleanup() {
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
@@ -138,20 +152,7 @@ function cleanup() {
     isInitialized = false;
 }
 
-// Intenta inicializar cuando el DOM esté listo
-function tryInit() {
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        initNetwork();
-    }
-}
-
-// Agregar múltiples listeners para asegurar la inicialización
-document.addEventListener('DOMContentLoaded', tryInit);
-window.addEventListener('load', tryInit);
-
-// Intentar inicializar inmediatamente si el DOM ya está listo
-tryInit();
-
-// Limpiar cuando se desmonte la página
+// Inicialización simplificada
+document.addEventListener('DOMContentLoaded', initNetwork);
 window.addEventListener('beforeunload', cleanup);
 
