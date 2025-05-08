@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
         errorDiv.style.color = 'red';
-        errorDiv.style.fontWeight = 'bold';
+        //errorDiv.style.fontWeight = 'bold';
         errorDiv.style.marginTop = '5px';
         errorDiv.style.fontSize = '14px';
         errorDiv.textContent = message;
@@ -46,13 +46,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`html/${codigo}.html`);
             if (!response.ok) {
                 showError('Código no encontrado');
                 return;
             }
-            // Si el archivo existe, permitir que redirect.js maneje la redirección
-            window.location.href = `html/${codigo}.html`;
         } catch (error) {
             showError('Código no encontrado.');
         }
