@@ -15,9 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const codigo = input.value.trim();
 
         if (codigo) {
-            window.location.href = `html/${codigo}.html`;
-        } else {
-            alert('Por favor, ingrese un código.');
+            // Verificar si el código existe antes de redirigir
+            if (validCodes.includes(codigo)) {
+                window.location.href = `html/${codigo}.html`;
+            } else {
+                //alert('El código ingresado no existe. Por favor, verifique el código.');
+            }
         }
     });
 });
+
