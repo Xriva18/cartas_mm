@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
         errorDiv.style.color = 'red';
-        //errorDiv.style.fontWeight = 'bold';
         errorDiv.style.marginTop = '5px';
         errorDiv.style.fontSize = '14px';
         errorDiv.textContent = message;
@@ -36,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Interceptar el envío del formulario
-    form.addEventListener('submit', async function (e) {
+    form.addEventListener('submit', function (e) {
         e.preventDefault();
         const codigo = input.value.trim();
 
@@ -45,12 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        try {
-            if (!response.ok) {
-                showError('Código no encontrado');
-                return;
-            }
-        } catch (error) {
+        // Verificar si el código existe
+        if (validCodes.includes(codigo)) {
+            window.location.href = `html/${codigo}.html`;
+        } else {
             showError('Código no encontrado.');
         }
     });

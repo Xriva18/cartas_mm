@@ -3,7 +3,8 @@ let animationFrameId = null;
 let isInitialized = false;
 
 function initNetwork() {
-    if (isInitialized) return;
+    // Limpiamos cualquier animación existente antes de inicializar
+    cleanup();
 
     const canvas = document.getElementById('networkBg');
     if (!canvas) {
@@ -150,9 +151,25 @@ function cleanup() {
         animationFrameId = null;
     }
     isInitialized = false;
+
+    // Limpiamos el canvas si existe
+    const canvas = document.getElementById('networkBg');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
 }
 
-// Inicialización simplificada
+// Mejoramos el manejo de eventos
 document.addEventListener('DOMContentLoaded', initNetwork);
 window.addEventListener('beforeunload', cleanup);
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
+        // La página se está cargando desde el caché del navegador
+        cleanup();
+        initNetwork();
+    }
+});
 
