@@ -8,8 +8,8 @@ const validCodes = [
     's9', 's10', 's11',
     's12', 's13', 's14',
     's15', 's16', 's17',
-    's18', 's19'
+    's18', 's19', 's20'
 ];
 
 // Exportar la variable para que pueda ser usada en otros archivos
-window.validCodes = validCodes; 
+window.validCodes = validCodes; ` `
