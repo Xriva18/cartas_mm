@@ -14,4 +14,4 @@ const validCodes = [
 ];
 
 // Exportar la variable para que pueda ser usada en otros archivos
-window.validCodes = validCodes; ` `
+window.validCodes = validCodes; 
