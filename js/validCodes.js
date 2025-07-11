@@ -10,7 +10,7 @@ const validCodes = [
     's15', 's16', 's17',
     's18', 's19', 's20',
     's21', 's22', 's23',
-    's24', 's25', '190625'
+    's24', 's25', 's26', 's27', '190625'
 ];
 
 // Exportar la variable para que pueda ser usada en otros archivos
