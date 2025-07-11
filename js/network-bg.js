@@ -1,6 +1,120 @@
 // js/network-bg.js
 let animationFrameId = null;
 let isInitialized = false;
+let isDragging = false;
+let draggedPoint = null;
+let mouseX = 0;
+let mouseY = 0;
+let currentCanvas = null;
+let currentPoints = null;
+
+// Funciones de manejo de eventos (scope global)
+function getPointAtPosition(x, y, points) {
+    const clickRadius = 8; // Radio de detección para clicks
+    for (let i = points.length - 1; i >= 0; i--) {
+        const p = points[i];
+        const dx = p.x - x;
+        const dy = p.y - y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance <= clickRadius) {
+            return p;
+        }
+    }
+    return null;
+}
+
+function getMousePos(canvas, evt) {
+    const rect = canvas.getBoundingClientRect();
+    // Funciona tanto para eventos de mouse como táctiles
+    const clientX = evt.clientX || evt.touches?.[0]?.clientX || 0;
+    const clientY = evt.clientY || evt.touches?.[0]?.clientY || 0;
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+function handleMouseDown(e) {
+    if (!currentCanvas || !currentPoints) return;
+
+    const pos = getMousePos(currentCanvas, e);
+    const clickedPoint = getPointAtPosition(pos.x, pos.y, currentPoints);
+
+    if (clickedPoint) {
+        isDragging = true;
+        draggedPoint = clickedPoint;
+        draggedPoint.isDragging = true;
+        currentCanvas.style.cursor = 'grabbing';
+        e.preventDefault();
+    }
+}
+
+function handleMouseMove(e) {
+    if (!currentCanvas || !currentPoints) return;
+
+    const pos = getMousePos(currentCanvas, e);
+    mouseX = pos.x;
+    mouseY = pos.y;
+
+    if (isDragging && draggedPoint) {
+        draggedPoint.x = pos.x;
+        draggedPoint.y = pos.y;
+        e.preventDefault();
+    } else {
+        // Cambiar cursor si está sobre un nodo
+        const hoveredPoint = getPointAtPosition(pos.x, pos.y, currentPoints);
+        currentCanvas.style.cursor = hoveredPoint ? 'grab' : 'default';
+    }
+}
+
+function handleMouseUp(e) {
+    if (isDragging && draggedPoint) {
+        isDragging = false;
+        draggedPoint.isDragging = false;
+        draggedPoint = null;
+        if (currentCanvas) {
+            currentCanvas.style.cursor = 'default';
+        }
+        e.preventDefault();
+    }
+}
+
+// Funciones para dispositivos táctiles
+function handleTouchStart(e) {
+    if (!currentCanvas || !currentPoints) return;
+
+    e.preventDefault();
+    const touch = e.touches[0];
+    const pos = getMousePos(currentCanvas, touch);
+    const clickedPoint = getPointAtPosition(pos.x, pos.y, currentPoints);
+
+    if (clickedPoint) {
+        isDragging = true;
+        draggedPoint = clickedPoint;
+        draggedPoint.isDragging = true;
+    }
+}
+
+function handleTouchMove(e) {
+    if (!currentCanvas || !currentPoints) return;
+
+    e.preventDefault();
+    if (isDragging && draggedPoint && e.touches[0]) {
+        const touch = e.touches[0];
+        const pos = getMousePos(currentCanvas, touch);
+        draggedPoint.x = pos.x;
+        draggedPoint.y = pos.y;
+    }
+}
+
+function handleTouchEnd(e) {
+    if (isDragging && draggedPoint) {
+        isDragging = false;
+        draggedPoint.isDragging = false;
+        draggedPoint = null;
+        e.preventDefault();
+    }
+}
 
 function initNetwork() {
     // Limpiamos cualquier animación existente antes de inicializar
@@ -17,6 +131,9 @@ function initNetwork() {
         console.error('Could not get canvas context');
         return;
     }
+
+    // Asignar referencias globales
+    currentCanvas = canvas;
 
     let POINTS = 80;
     let threshold = 150;
@@ -51,20 +168,26 @@ function initNetwork() {
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
             vx: (Math.random() - 0.5) * 0.5,
-            vy: (Math.random() - 0.5) * 0.5
+            vy: (Math.random() - 0.5) * 0.5,
+            isDragging: false
         }));
+        // Asignar referencia a los puntos
+        currentPoints = points;
     }
 
     function updatePoints() {
         for (const p of points) {
-            p.x += p.vx;
-            p.y += p.vy;
+            // Solo actualizar posición si no está siendo arrastrado
+            if (!p.isDragging) {
+                p.x += p.vx;
+                p.y += p.vy;
 
-            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
-            p.x = Math.max(0, Math.min(canvas.width, p.x));
-            p.y = Math.max(0, Math.min(canvas.height, p.y));
+                p.x = Math.max(0, Math.min(canvas.width, p.x));
+                p.y = Math.max(0, Math.min(canvas.height, p.y));
+            }
         }
     }
 
@@ -122,12 +245,27 @@ function initNetwork() {
         }
 
         // Dibuja los nodos con opacidad pulsante
-        ctx.globalAlpha = pulseOpacity;
-        ctx.fillStyle = hexToRgba(nodeColor, pulseOpacity);
         for (const p of points) {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-            ctx.fill();
+            if (p.isDragging) {
+                // Nodo siendo arrastrado - más grande y brillante
+                ctx.globalAlpha = 1.0;
+                ctx.fillStyle = hexToRgba(nodeColor, 1.0);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Añadir un borde brillante
+                ctx.strokeStyle = hexToRgba(nodeColor, 0.8);
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else {
+                // Nodo normal con opacidad pulsante
+                ctx.globalAlpha = pulseOpacity;
+                ctx.fillStyle = hexToRgba(nodeColor, pulseOpacity);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     }
 
@@ -136,6 +274,17 @@ function initNetwork() {
         draw();
         animationFrameId = requestAnimationFrame(animate);
     }
+
+    // Agregar event listeners para mouse
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mouseleave', handleMouseUp);
+
+    // Agregar event listeners para dispositivos táctiles
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     resize();
     initPoints();
@@ -151,6 +300,8 @@ function cleanup() {
         animationFrameId = null;
     }
     isInitialized = false;
+    isDragging = false;
+    draggedPoint = null;
 
     // Limpiamos el canvas si existe
     const canvas = document.getElementById('networkBg');
@@ -159,7 +310,19 @@ function cleanup() {
         if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
+        // Remover event listeners
+        canvas.removeEventListener('mousedown', handleMouseDown);
+        canvas.removeEventListener('mousemove', handleMouseMove);
+        canvas.removeEventListener('mouseup', handleMouseUp);
+        canvas.removeEventListener('mouseleave', handleMouseUp);
+        canvas.removeEventListener('touchstart', handleTouchStart);
+        canvas.removeEventListener('touchmove', handleTouchMove);
+        canvas.removeEventListener('touchend', handleTouchEnd);
     }
+
+    // Limpiar referencias globales
+    currentCanvas = null;
+    currentPoints = null;
 }
 
 // Mejoramos el manejo de eventos
