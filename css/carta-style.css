@@ -38,6 +38,11 @@ body {
 
 /* Hace que la tarjeta sea claramente interactiva */
 .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
     cursor: pointer;
     /* Para dispositivos con mouse */
 }
