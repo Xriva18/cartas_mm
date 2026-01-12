@@ -36,6 +36,7 @@ const validCodes = [
   "s27",
   "190625",
   "2s1",
+  "2s2",
 ];
 
 // Exportar la variable para que pueda ser usada en otros archivos
