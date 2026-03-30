@@ -41,6 +41,13 @@ const validCodes = [
   "2s4",
   "2s5",
   "2s6",//8/2/2026
+  "2s7",//15/02/2026
+  "2s8",//22/02/2026
+  "2s9",//01/03/2026
+  "2s10",//08/03/2026
+  "2s11",//15/03/2026
+  "2s12",//22/03/2026
+  "2s13",//29/03/2026
 ];
 
 // Exportar la variable para que pueda ser usada en otros archivos
